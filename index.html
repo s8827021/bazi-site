@@ -1550,15 +1550,15 @@ function switchTab(tab) {
 (function init() {
   const yr = document.getElementById('inputYear');
   for (let y = 2060; y >= 1940; y--)
-    yr.innerHTML += `<option value="${y}" ${y===1980?'selected':''}>${y}年</option>`;
+    yr.innerHTML += `<option value="${y}" ${y===2000?'selected':''}>${y}年</option>`;
   const mo = document.getElementById('inputMonth');
   for (let m = 1; m <= 12; m++)
-    mo.innerHTML += `<option value="${m}" ${m===2?'selected':''}>${m}月</option>`;
+    mo.innerHTML += `<option value="${m}" ${m===1?'selected':''}>${m}月</option>`;
   const da = document.getElementById('inputDay');
   for (let d = 1; d <= 31; d++)
-    da.innerHTML += `<option value="${d}" ${d===4?'selected':''}>${d}日</option>`;
-  document.getElementById('inputHour').value = '12';
-  document.getElementById('inputName').value = '葉信宏';
+    da.innerHTML += `<option value="${d}" ${d===1?'selected':''}>${d}日</option>`;
+  document.getElementById('inputHour').value = '0';
+  document.getElementById('inputName').value = '';
 })();
 </script>
 </body>
