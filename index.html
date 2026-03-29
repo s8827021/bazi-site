@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八字紫微命盤排盤系統</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & ROOT ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #3D6196;
+  --primary-light: #5A7DB3;
+  --primary-dark: #2D4A73;
+  --accent: #D4812E;
+  --accent-light: #E89A4E;
+  --bg: #EDE9E3;
+  --bg-card: #F6F4F0;
+  --bg-warm: #F3EFE9;
+  --text: #1E2A36;
+  --text-secondary: #495A6A;
+  --text-muted: #6B7B8D;
+  --border: #D4CDC4;
+  --border-light: #E4DFD8;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --red: #D04535;
+  --green: #248B55;
+  --purple: #7A6AAF;
+  --blue: #4E89C4;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans TC', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  line-height: 1.65;
+  font-size: 15px;
+}
+
+/* ===== LAYOUT ===== */
+.container { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+.pb-16 { padding-bottom: 64px; }
+
+/* ===== HEADER ===== */
+.site-header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 16px;
+  margin-bottom: 28px;
+  text-align: center;
+}
+.ornament-top {
+  color: var(--primary-light);
+  font-size: 14px;
+  letter-spacing: 6px;
+  margin-bottom: 6px;
+  opacity: 0.5;
+}
+.site-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--text);
+  line-height: 1.3;
+}
+.site-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 4px;
+  margin-top: 4px;
+}
+
+/* ===== INPUT CARD ===== */
+.input-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-sm);
+}
+.form-grid { display: flex; flex-direction: column; gap: 18px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.form-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.input-base {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 14px;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-base:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(74,111,165,0.1);
+}
+input.input-base::placeholder { color: var(--text-muted); }
+
+select.input-base {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath fill='none' stroke='%2364748B' stroke-width='1.5' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+select.input-base option { background: var(--bg-card); color: var(--text); }
+
+.form-center { text-align: center; padding-top: 6px; }
+
+.btn-calc {
+  background: var(--primary);
+  color: #fff;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 3px;
+  padding: 12px 56px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(74,111,165,0.25);
+}
+.btn-calc::after { display: none; }
+.btn-calc:hover { background: var(--primary-dark); box-shadow: 0 4px 14px rgba(74,111,165,0.3); transform: translateY(-1px); }
+.btn-calc:active { transform: translateY(0); }
+
+/* ===== TABS ===== */
+.tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.tab-btn {
+  padding: 10px 28px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-muted);
+  background: var(--bg-card);
+}
+.tab-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.tab-btn:not(.active):hover {
+  border-color: var(--primary-light);
+  color: var(--text);
+}
+
+/* ===== RESULT SECTION ===== */
+.result-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== DIVIDER ===== */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 20px 0 16px;
+}
+.section-divider:first-child { margin-top: 0; }
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.section-title {
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  white-space: nowrap;
+}
+
+/* ===== BAZI TABLE ===== */
+.table-wrap { overflow-x: auto; }
+.bazi-table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+}
+.bazi-table th {
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  letter-spacing: 1px;
+  padding: 11px 8px;
+  border: 1px solid var(--border);
+  text-align: center;
+  font-weight: 600;
+}
+.bazi-table td {
+  border: 1px solid var(--border-light);
+  text-align: center;
+  padding: 11px 8px;
+  font-size: 14px;
+}
+.bazi-table tr:nth-child(even) td { background: var(--bg); }
+.bazi-table .row-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  background: var(--bg);
+  width: 72px;
+  font-weight: 500;
+}
+.cell-tiangan { font-size: 28px; font-weight: 700; padding: 14px 8px; }
+.cell-dizhi   { font-size: 28px; font-weight: 700; padding: 14px 8px; color: #3B4A5A; }
+.stem-yang { color: #D35400; }
+.stem-yin  { color: #2980B9; }
+
+/* 十神 badges */
+.ss-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.ss-food     { background: #DCF0DE; color: #1B6D28; border: 1px solid #B8DFC0; }
+.ss-wealth   { background: #FFF3D6; color: #C66A00; border: 1px solid #FFDA80; }
+.ss-official { background: #FFE0E0; color: #A12020; border: 1px solid #FFC0C0; }
+.ss-seal     { background: #E4DCF4; color: #4A2CA0; border: 1px solid #C5B5E0; }
+.ss-peer     { background: #D8ECFB; color: #0D4F9A; border: 1px solid #A8D2F5; }
+.ss-rob      { background: #F8D8E6; color: #8E1048; border: 1px solid #F0A8C8; }
+
+/* ===== 命格分析 ===== */
+.mingge-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 4px;
+}
+@media (max-width: 600px) { .mingge-grid { grid-template-columns: 1fr; } }
+
+.badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.info-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.badge-purple { background: #E4DCF4; border: 1px solid #C5B5E0; color: #4A2CA0; }
+.badge-red    { background: #FFE0E0; border: 1px solid #FFC0C0; color: #A12020; }
+.badge-water  { background: #D8ECFB; border: 1px solid #A8D2F5; color: #0D4F9A; }
+.badge-green  { background: #DCF0DE; border: 1px solid #B8DFC0; color: #1B6D28; }
+
+.sub-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.xi-badge { background: #DCF0DE; border: 1px solid #B8DFC0; color: #1B6D28; }
+.ji-badge { background: #FFE0E0; border: 1px solid #FFC0C0; color: #A12020; }
+
+.wx-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.wx-label { width: 20px; font-size: 15px; font-weight: 700; }
+.wx-track {
+  flex: 1;
+  background: var(--border-light);
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+}
+.wx-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(.22,.61,.36,1);
+}
+.wx-count { font-size: 13px; color: var(--text-muted); width: 20px; text-align: right; }
+
+/* ===== 大運 ===== */
+.dayun-header { font-size: 13px; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 10px; font-weight: 500; }
+.dayun-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 8px;
+}
+.dayun-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 6px;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: default;
+}
+.dayun-item:hover { background: var(--border-light); border-color: var(--primary-light); }
+.dayun-item.current {
+  background: rgba(74,111,165,0.06);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(74,111,165,0.08);
+}
+.dayun-age   { font-size: 11px; color: var(--primary); letter-spacing: 1px; margin-bottom: 4px; font-weight: 600; }
+.dayun-year  { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+.dayun-stem  { font-size: 24px; font-weight: 700; line-height: 1.2; }
+.dayun-branch{ font-size: 24px; font-weight: 700; line-height: 1.2; }
+.dayun-cur-tag { font-size: 10px; color: var(--primary); margin-top: 3px; font-weight: 600; }
+
+/* ===== 流年 ===== */
+.liunian-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+@media (max-width: 500px) { .liunian-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.liunian-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 4px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+.liunian-item.current {
+  background: rgba(74,111,165,0.06);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(74,111,165,0.06);
+}
+.liunian-year { font-size: 11px; color: var(--primary); font-weight: 600; margin-bottom: 3px; }
+.liunian-gz   { font-size: 16px; font-weight: 700; line-height: 1.3; }
+.liunian-sh   { font-size: 10px; margin-top: 4px; line-height: 1.7; color: var(--text-muted); }
+
+/* ===== 紫微盤 ===== */
+.ziwei-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-top: 8px;
+  aspect-ratio: 1 / 1;
+}
+
+.palace {
+  background: var(--bg-card);
+  padding: 7px 8px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 110px;
+  transition: background 0.2s;
+}
+.palace:hover { background: var(--bg-warm); }
+
+.palace-center {
+  grid-column: 2 / 4;
+  grid-row: 2 / 4;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px 12px;
+}
+
+.palace-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2px;
+}
+.palace-name  { font-size: 12px; color: var(--text-secondary); letter-spacing: 1px; font-weight: 600; }
+.palace-ganzhi{ font-size: 12px; color: var(--primary); font-weight: 600; }
+.palace-age   { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+.palace-mark  {
+  position: absolute;
+  top: 5px; right: 5px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 6px rgba(74,111,165,0.4);
+}
+
+.palace-stars { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.star-main  { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.45; }
+.star-aux   { font-size: 12px; color: var(--text-secondary); line-height: 1.45; }
+.star-minor { font-size: 11px; color: var(--text-muted);  line-height: 1.45; }
+.star-qa    { font-size: 11px; color: #C0440A; line-height: 1.45; }
+.star-aux-item {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.star-qa-item {
+  font-size: 11px;
+  color: #C0440A;
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+
+.brt-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+.brt-廟 { color: #A12020; background: #FFE0E0; }
+.brt-旺 { color: #B84500; background: #FFEAD0; }
+.brt-得 { color: #1B6D28; background: #DCF0DE; }
+.brt-利 { color: #1A6CA0; background: #D8ECFB; }
+.brt-閒 { color: #7A7A7A; }
+.brt-陷 { color: #7A7A7A; background: #EAEAEA; }
+.sihua-tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 700;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+.sihua-lu   { background: #DCF0DE; color: #1B6D28; }
+.sihua-quan { background: #FFE0E0; color: #A12020; }
+.sihua-ke   { background: #E4DCF4; color: #4A2CA0; }
+.sihua-ji   { background: #DDE2E7; color: #3D4F5E; }
+
+/* Center panel */
+.center-name { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: 2px; margin-bottom: 5px; }
+.center-line  { width: 48px; height: 1px; background: var(--border); margin: 7px auto; }
+.center-info  {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 2;
+}
+.center-sihua { font-size: 13px; margin-top: 6px; }
+.sih-lu   { color: #1B6D28; font-weight: 600; }
+.sih-quan { color: #A12020; font-weight: 600; }
+.sih-ke   { color: #4A2CA0; font-weight: 600; }
+.sih-ji   { color: #3D4F5E; font-weight: 600; }
+
+/* ===== 流年四化 ===== */
+.sihua-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+@media (max-width: 500px) { .sihua-grid { grid-template-columns: repeat(4, 1fr); } }
+.sihua-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 4px;
+  text-align: center;
+}
+.sihua-card.current {
+  border-color: var(--primary);
+  background: rgba(74,111,165,0.04);
+  box-shadow: 0 0 0 2px rgba(74,111,165,0.06);
+}
+
+/* ===== LOADING ===== */
+.loading-mask {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(247,248,250,0.88);
+  z-index: 200;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.loading-mask.active { display: flex; }
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: var(--primary); letter-spacing: 3px; font-size: 14px; font-weight: 500; }
+
+/* ===== ANIMATIONS ===== */
+.fade-in { animation: fadeUp 0.4s ease forwards; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  .form-row-2 { grid-template-columns: 1fr; }
+  .input-card { padding: 18px 14px; }
+  .result-section { padding: 18px 12px; }
+  .palace { min-height: 80px; padding: 5px 5px; }
+  .star-main { font-size: 12px; }
+  .star-aux-item { font-size: 11px; }
+  .palace-name, .palace-ganzhi { font-size: 10px; }
+  .center-name { font-size: 18px; }
+  .center-info { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-mask" id="loadingMask">
+  <div class="spinner"></div>
+  <div class="loading-text">命盤推算中</div>
+</div>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="ornament-top">— — —</div>
+  <h1 class="site-title">八字紫微命盤</h1>
+  <p class="site-subtitle">BAZI · ZIWEI DOUSHU · DESTINY CHART</p>
+</header>
+
+<main class="container pb-16">
+
+  <!-- Input Form -->
+  <div class="input-card">
+    <div class="form-grid">
+      <div class="form-row-2">
+        <div>
+          <label class="form-label" for="inputName">姓　名</label>
+          <input type="text" id="inputName" class="input-base" placeholder="請輸入姓名（選填）">
+        </div>
+        <div>
+          <label class="form-label" for="inputGender">性　別</label>
+          <select id="inputGender" class="input-base">
+            <option value="male">男</option>
+            <option value="female">女</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label">出生年月日</label>
+        <div class="form-row-3">
+          <select id="inputYear" class="input-base"></select>
+          <select id="inputMonth" class="input-base"></select>
+          <select id="inputDay" class="input-base"></select>
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label" for="inputHour">出生時辰</label>
+        <select id="inputHour" class="input-base">
+          <option value="0">子時（23:00 - 00:59）</option>
+          <option value="2">丑時（01:00 - 02:59）</option>
+          <option value="4">寅時（03:00 - 04:59）</option>
+          <option value="6">卯時（05:00 - 06:59）</option>
+          <option value="8">辰時（07:00 - 08:59）</option>
+          <option value="10">巳時（09:00 - 10:59）</option>
+          <option value="12">午時（11:00 - 12:59）</option>
+          <option value="14">未時（13:00 - 14:59）</option>
+          <option value="16">申時（15:00 - 16:59）</option>
+          <option value="18">酉時（17:00 - 18:59）</option>
+          <option value="20">戌時（19:00 - 20:59）</option>
+          <option value="22">亥時（21:00 - 22:59）</option>
+        </select>
+      </div>
+
+      <div class="form-center">
+        <button class="btn-calc" onclick="calculate()">開始排盤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results" style="display:none;" class="fade-in">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tab1" onclick="switchTab('bazi')">八字命盤</button>
+      <button class="tab-btn" id="tab2" onclick="switchTab('ziwei')">紫微命盤</button>
+    </div>
+
+    <!-- Bazi Panel -->
+    <div id="baziPanel">
+      <div class="result-section">
+        <div class="section-divider"><span class="section-title">四 柱 八 字</span></div>
+        <div class="table-wrap">
+          <table class="bazi-table" id="baziTable"></table>
+        </div>
+        <div class="section-divider" style="margin-top:28px;"><span class="section-title">地 支 藏 干</span></div>
+        <div class="table-wrap">
+          <table class="bazi-table" id="cangganTable"></table>
+        </div>
+      </div>
+
+      <div class="result-section" id="minggeSection"></div>
+
+      <div class="result-section">
+        <div class="section-divider"><span class="section-title">大 運 流 程</span></div>
+        <div id="dayunContainer"></div>
+      </div>
+
+      <div class="result-section">
+        <div class="section-divider"><span class="section-title">近 期 流 年</span></div>
+        <div id="liuNianGrid" class="liunian-grid"></div>
+      </div>
+    </div>
+
+    <!-- Ziwei Panel -->
+    <div id="ziweiPanel" style="display:none;">
+      <div class="result-section">
+        <div class="section-divider"><span class="section-title">紫 微 斗 數 命 盤</span></div>
+        <div id="ziweiBoard" class="ziwei-board"></div>
+      </div>
+      <div class="result-section">
+        <div class="section-divider"><span class="section-title">流 年 四 化</span></div>
+        <div id="liuNianSihua" class="sihua-grid"></div>
+      </div>
+    </div>
+
+  </div><!-- /results -->
+</main>
+
+<script>
+// ============================================================
+// CONSTANTS
+// ============================================================
+const TG = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const DZ = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const JIEQI_NAMES = ['小寒','大寒','立春','雨水','驚蟄','春分','清明','穀雨','立夏','小滿','芒種','夏至','小暑','大暑','立秋','處暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至'];
+
+const CANGGAN = {
+  子:['癸'], 丑:['己','癸','辛'], 寅:['甲','丙','戊'], 卯:['乙'],
+  辰:['戊','乙','癸'], 巳:['丙','庚','戊'], 午:['丁','己'], 未:['己','丁','乙'],
+  申:['庚','壬','戊'], 酉:['辛'], 戌:['戊','辛','丁'], 亥:['壬','甲']
+};
+const WX_GAN = {甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
+const WX_ZHI = {子:'水',丑:'土',寅:'木',卯:'木',辰:'土',巳:'火',午:'火',未:'土',申:'金',酉:'金',戌:'土',亥:'水'};
+const YY_GAN = {甲:'陽',乙:'陰',丙:'陽',丁:'陰',戊:'陽',己:'陰',庚:'陽',辛:'陰',壬:'陽',癸:'陰'};
+const WX_COLORS = {木:'#27AE60',火:'#E74C3C',土:'#C68D3A',金:'#D4A017',水:'#2980B9'};
+
+const SHENG = {木:'火',火:'土',土:'金',金:'水',水:'木'};
+const KE   = {木:'土',土:'水',水:'火',火:'金',金:'木'};
+
+const SS_CLASS = {
+  食神:'ss-food', 傷官:'ss-food',
+  偏財:'ss-wealth', 正財:'ss-wealth',
+  偏官:'ss-official', 正官:'ss-official',
+  偏印:'ss-seal', 正印:'ss-seal',
+  比肩:'ss-peer', 劫財:'ss-rob', 日主:'ss-peer'
+};
+
+function getShiShen(ri, other) {
+  const w1 = WX_GAN[ri], w2 = WX_GAN[other];
+  const y1 = YY_GAN[ri], y2 = YY_GAN[other];
+  const same = y1 === y2;
+  if (w1 === w2) return same ? '比肩' : '劫財';
+  if (SHENG[w1] === w2) return same ? '食神' : '傷官';
+  if (KE[w1] === w2)   return same ? '偏財' : '正財';
+  if (KE[w2] === w1)   return same ? '偏官' : '正官';
+  if (SHENG[w2] === w1) return same ? '偏印' : '正印';
+  return '?';
+}
+
+// ============================================================
+// 節氣計算
+// ============================================================
+const JQ_C = [
+  [1,5.9],[1,20.1],[2,3.87],[2,18.73],[3,5.63],[3,20.65],
+  [4,4.81],[4,20.09],[5,5.52],[5,21.04],[6,5.678],[6,21.37],
+  [7,7.108],[7,22.83],[8,7.5],[8,23.13],[9,7.646],[9,23.042],
+  [10,7.588],[10,23.438],[11,7.011],[11,22.38],[12,6.954],[12,22.12]
+];
+
+function calcJieQi(year) {
+  const y = year % 100;
+  const C = year >= 2000 ? -0.5 : 0;
+  return JQ_C.map(([m, c], i) => {
+    const d = Math.floor(y * 0.2422 + c + C) - Math.floor((y - 1) / 4);
+    return { month: m, day: d, name: JIEQI_NAMES[i] };
+  });
+}
+
+// ============================================================
+// 農曆轉換
+// ============================================================
+// 農曆正月初一陽曆日期 (1940-2060，index = year-1940)
+// [solar_month, solar_day] of 農曆正月初一
+const NY_TABLE = [[2,8],[1,27],[2,15],[2,5],[1,25],[2,13],[2,2],[1,22],[2,10],[1,29],[2,17],[2,6],[1,27],[2,14],[2,3],[1,24],[2,12],[1,31],[2,18],[2,8],[1,28],[2,15],[2,5],[1,25],[2,13],[2,2],[1,21],[2,9],[1,30],[2,17],[2,6],[1,27],[2,15],[2,3],[1,23],[2,11],[1,31],[2,18],[2,7],[1,28],[2,16],[2,5],[1,25],[2,13],[2,2],[2,20],[2,9],[1,29],[2,17],[2,6],[1,27],[2,15],[2,4],[1,23],[2,10],[1,31],[2,19],[2,7],[1,28],[2,16],[2,5],[1,24],[2,12],[2,1],[1,22],[2,9],[1,29],[2,18],[2,7],[1,26],[2,14],[2,3],[1,23],[2,10],[1,31],[2,19],[2,8],[1,28],[2,16],[2,5],[1,25],[2,12],[2,1],[1,22],[2,10],[1,29],[2,17],[2,6],[1,26],[2,13],[2,3],[1,23],[2,11],[1,31],[2,19],[2,8],[1,28],[2,15],[2,4],[1,24],[2,12],[2,1],[1,22],[2,10],[1,30],[2,17],[2,6],[1,26],[2,14],[2,2],[1,23],[2,11],[2,1],[2,19],[2,8],[1,28],[2,15],[2,4],[1,24],[2,12],[2,2]];
+
+// 農曆月份天數 (1940-2060，index = year-1940)
+// [leapMonth, m1, m2, ..., m12, (leapMonthDays if leapMonth>0)]
+const MONTH_TABLE = [[0,30,30,29,30,29,30,29,29,30,29,30,29],[6,30,30,29,30,30,29,30,29,29,30,29,30,29],[0,30,29,30,30,29,30,29,30,29,30,29,30],[0,29,30,29,30,29,30,30,29,30,29,30,29],[4,30,29,30,29,30,29,30,29,30,30,29,30,30],[0,29,29,30,29,29,30,29,30,30,30,29,30],[0,30,29,29,30,29,29,30,29,30,30,29,30],[2,30,30,29,29,30,29,29,30,29,30,29,30,30],[0,30,29,30,29,30,29,29,30,29,30,29,30],[7,30,29,30,30,29,30,29,29,30,29,30,29,30],[0,29,30,30,29,30,30,29,29,30,29,30,29],[0,30,29,30,30,29,30,29,30,29,30,29,30],[5,29,30,29,30,29,30,29,30,30,29,30,29,30],[0,29,30,29,29,30,30,29,30,30,29,30,29],[0,30,29,30,29,29,30,29,30,30,29,30,30],[3,29,30,29,30,29,29,30,29,30,29,30,30,30],[0,29,30,29,30,29,29,30,29,30,29,30,30],[8,30,29,30,29,30,29,29,30,29,30,29,30,29],[0,30,30,30,29,30,29,29,30,29,30,29,30],[0,29,30,30,29,30,29,30,29,30,29,30,29],[6,30,29,30,29,30,30,29,30,29,30,29,30,29],[0,30,29,30,29,30,29,30,30,29,30,29,30],[0,29,30,29,29,30,29,30,30,29,30,30,29],[4,30,29,30,29,29,30,29,30,29,30,30,30,29],[0,30,29,30,29,29,30,29,30,29,30,30,30],[0,29,30,29,30,29,29,30,29,29,30,30,29],[3,30,30,30,29,30,29,29,30,29,29,30,30,29],[0,30,30,29,30,30,29,29,30,29,30,29,30],[7,29,30,29,30,30,29,30,29,30,29,30,29,30],[0,29,30,29,30,29,30,30,29,30,29,30,29],[0,30,29,29,30,29,30,30,29,30,30,29,30],[5,29,30,29,29,30,29,30,29,30,30,30,29,30],[0,29,30,29,29,30,29,30,29,30,30,29,30],[0,30,29,30,29,29,30,29,29,30,30,29,30],[4,30,30,29,30,29,29,30,29,29,30,30,29,30],[0,30,30,29,30,29,29,30,29,29,30,29,30],[8,30,30,29,30,29,30,29,30,29,29,30,29,30],[0,30,29,30,30,29,30,29,30,29,30,29,29],[0,30,29,30,30,29,30,30,29,30,29,30,29],[6,30,29,29,30,29,30,30,29,30,30,29,30,29],[0,30,29,29,30,29,30,29,30,30,29,30,30],[0,29,30,29,29,30,29,29,30,30,29,30,30],[4,30,29,30,29,29,30,29,29,30,29,30,30,30],[0,30,29,30,29,29,30,29,29,30,29,30,30],[10,30,29,30,30,29,29,30,29,29,30,29,30,30],[0,29,30,30,29,30,29,30,29,29,30,29,30],[0,29,30,30,29,30,30,29,30,29,30,29,29],[6,30,29,30,29,30,30,29,30,30,29,30,29,29],[0,30,29,30,29,30,29,30,30,29,30,30,29],[0,30,29,29,30,29,30,29,30,29,30,30,30],[5,29,30,29,29,30,29,29,30,29,30,30,30,30],[0,29,30,29,29,30,29,29,30,29,30,30,30],[0,29,30,30,29,29,30,29,29,30,29,30,30],[3,29,30,30,29,30,29,30,29,29,30,29,30,29],[0,30,30,30,29,30,29,30,29,29,30,29,30],[8,29,30,30,29,30,29,30,30,29,29,30,29,30],[0,29,30,29,30,30,29,30,29,30,30,29,29],[0,30,29,30,29,30,29,30,30,29,30,30,29],[5,30,29,29,30,29,29,30,30,29,30,30,29,30],[0,30,29,29,30,29,29,30,29,30,30,30,29],[0,30,30,29,29,30,29,29,30,29,30,30,29],[4,30,30,29,30,29,30,29,29,30,29,30,29,30],[0,30,30,29,30,29,30,29,29,30,29,30,29],[0,30,30,29,30,30,29,30,29,29,30,29,30],[2,29,30,29,30,30,29,30,29,30,29,30,29,30],[0,29,30,29,30,29,30,30,29,30,29,30,29],[7,30,29,30,29,30,29,30,29,30,30,29,30,30],[0,29,29,30,29,29,30,29,30,30,30,29,30],[0,30,29,29,30,29,29,30,29,30,30,29,30],[5,30,30,29,29,30,29,29,30,29,30,29,30,30],[0,30,29,30,29,30,29,29,30,29,30,29,30],[0,30,29,30,30,29,30,29,29,30,29,30,29],[4,30,29,30,30,29,30,29,30,29,30,29,30,29],[0,30,29,30,29,30,30,29,30,29,30,29,30],[9,29,30,29,30,29,30,29,30,30,29,30,29,30],[0,29,30,29,29,30,29,30,30,30,29,30,29],[0,30,29,30,29,29,30,29,30,30,29,30,30],[6,29,30,29,30,29,29,30,29,30,29,30,30,30],[0,29,30,29,30,29,29,30,29,30,29,30,30],[0,30,29,30,29,30,29,29,30,29,29,30,30],[4,29,30,30,30,29,30,29,29,30,29,30,29,30],[0,29,30,30,29,30,29,30,29,30,29,30,29],[0,30,29,30,29,30,30,29,30,29,30,29,30],[2,29,30,29,29,30,30,29,30,30,29,30,29,30],[0,29,30,29,29,30,29,30,30,29,30,30,29],[6,30,29,30,29,29,30,29,30,29,30,30,30,29],[0,30,29,30,29,29,30,29,29,30,30,30,29],[0,30,30,29,30,29,29,30,29,29,30,30,29],[5,30,30,30,29,30,29,29,30,29,29,30,30,29],[0,30,30,29,30,29,30,29,30,29,29,30,30],[0,29,30,29,30,30,29,30,29,30,29,30,29],[3,29,30,30,29,30,29,30,30,29,30,29,30,29],[0,30,29,29,30,29,30,30,29,30,30,29,30],[11,29,30,29,29,30,29,30,29,30,30,30,29,30],[0,29,30,29,29,30,29,30,29,30,30,29,30],[0,30,29,30,29,29,30,29,29,30,30,29,30],[6,30,30,29,30,29,29,30,29,29,30,29,30,30],[0,30,30,29,30,29,29,30,29,29,30,29,30],[0,30,30,29,30,29,30,29,30,29,29,30,29],[5,30,30,29,30,30,29,30,29,30,29,30,29,29],[0,30,29,30,30,29,30,29,30,30,29,30,29],[0,29,30,29,30,29,30,30,29,30,30,29,30],[2,29,30,29,29,30,29,30,29,30,30,29,30,30],[0,29,30,29,29,30,29,29,30,30,29,30,30],[7,30,29,30,29,29,30,29,29,30,29,30,30,30],[0,30,29,30,29,29,30,29,29,30,29,30,30],[0,30,29,30,29,30,29,30,29,29,30,29,30],[5,30,29,30,30,29,30,29,30,29,29,30,29,30],[0,29,30,30,29,30,30,29,30,29,29,30,29],[0,30,29,30,29,30,30,29,30,30,29,30,29],[3,29,30,29,30,29,30,29,30,30,29,30,30,29],[0,30,29,29,30,29,29,30,30,29,30,30,30],[8,29,30,29,29,30,29,29,30,29,30,30,30,30],[0,29,30,29,29,30,29,29,30,29,30,30,30],[0,29,30,30,29,29,30,29,29,30,29,30,30],[6,29,30,30,29,30,29,30,29,29,30,29,30,29],[0,30,30,30,29,30,29,30,29,29,30,29,30],[0,29,30,30,29,30,29,30,30,29,29,30,29],[4,30,29,30,29,30,29,30,30,29,30,30,29,29],[0,30,29,30,29,30,29,30,29,30,30,30,29],[0,30,29,29,30,29,29,30,29,30,30,30,29]];
+
+function solar2lunar(year, month, day) {
+  const target = new Date(year, month - 1, day);
+  const BASE_YEAR = 1940;
+  for (let y = BASE_YEAR; y <= 2059; y++) {
+    const idx = y - BASE_YEAR;
+    const [nm, nd] = NY_TABLE[idx];
+    const [nm2, nd2] = NY_TABLE[idx + 1] || [12, 31];
+    const d1 = new Date(y,          nm  - 1, nd);
+    const d2 = new Date(y + (nm2 < nm ? 1 : (nm2 === nm && nd2 < nd ? 1 : 0)), nm2 - 1, nd2);
+    // 更簡單：直接算下一年正月初一
+    const nextNY = NY_TABLE[idx + 1];
+    const d2real = nextNY ? new Date(y + 1, nextNY[0] - 1, nextNY[1]) : new Date(y + 1, 1, 15);
+    if (target >= d1 && target < d2real) {
+      let offset = Math.round((target - d1) / 86400000);
+      const row = MONTH_TABLE[idx];
+      const leapMonth = row[0];
+      const months = row.slice(1);
+      for (let i = 0; i < months.length; i++) {
+        if (offset < months[i]) {
+          let m;
+          if (leapMonth === 0)    m = i + 1;
+          else if (i < leapMonth) m = i + 1;
+          else if (i === leapMonth) m = leapMonth;
+          else m = i;
+          return { year: y, month: m, day: offset + 1 };
+        }
+        offset -= months[i];
+      }
+    }
+  }
+  return { year: year - 1, month: 12, day: 1 };
+}
+
+// ============================================================
+// 四柱計算
+// ============================================================
+function calcSizhu(year, month, day, hour) {
+  const hourZhi = Math.floor(hour / 2);
+
+  // 年柱 (以立春為界)
+  const jqs = calcJieQi(year);
+  const lichun = jqs[2]; // 立春 index=2
+  let lunarYear = year;
+  if (month < 2 || (month === 2 && day <= lichun.day)) lunarYear--;
+
+  const yGanIdx = (((lunarYear - 4) % 10) + 10) % 10;
+  const yZhiIdx = (((lunarYear - 4) % 12) + 12) % 12;
+
+  // 月柱 (以各月「節」為界，非「氣」)
+  // 節氣索引: 小寒(0),立春(2),驚蟄(4),清明(6),立夏(8),芒種(10),小暑(12),立秋(14),白露(16),寒露(18),立冬(20),大雪(22)
+  // 月份對應的節: 1月→小寒, 2月→立春, 3月→驚蟄, ...
+  const monthJieIndices = [0,2,4,6,8,10,12,14,16,18,20,22];
+  const jie = jqs[monthJieIndices[month - 1]];
+  // 若在該月節氣當天或之前，則仍屬上一個月
+  let adjMonth = (day <= jie.day) ? month - 1 : month;
+  if (adjMonth <= 0) adjMonth += 12;
+  const mZhiMap = [1,2,3,4,5,6,7,8,9,10,11,0];
+  const mZhiIdx = mZhiMap[adjMonth - 1];
+  const mGanBase = [2,4,6,8,0];
+  const mGanIdx  = (mGanBase[yGanIdx % 5] + (mZhiIdx >= 2 ? mZhiIdx - 2 : mZhiIdx + 10)) % 10;
+
+  // 日柱
+  const base = new Date(1900, 0, 1);
+  const target = new Date(year, month - 1, day);
+  const diff = Math.floor((target - base) / 86400000);
+  const dGzIdx = ((diff + 10) % 60 + 60) % 60;
+  const dGanIdx = dGzIdx % 10;
+  const dZhiIdx = dGzIdx % 12;
+
+  // 時柱
+  const hGanBase = [0,2,4,6,8];
+  const hGanIdx  = (hGanBase[dGanIdx % 5] + hourZhi) % 10;
+
+  return {
+    year:  { gan: TG[yGanIdx],  zhi: DZ[yZhiIdx]  },
+    month: { gan: TG[mGanIdx],  zhi: DZ[mZhiIdx]  },
+    day:   { gan: TG[dGanIdx],  zhi: DZ[dZhiIdx]  },
+    hour:  { gan: TG[hGanIdx],  zhi: DZ[hourZhi]  },
+    lunarYear
+  };
+}
+
+function getMingge(sz) {
+  const ri = sz.day.gan;
+  const riWx = WX_GAN[ri];
+  const mZhi = sz.month.zhi;
+  const cg = CANGGAN[mZhi] || [];
+  if (!cg.length) return '普通格';
+  // 本氣（第一藏干）決定格局
+  const mainCg = cg[0];
+  const ss = getShiShen(ri, mainCg);
+  // 比肩/劫財→建祿格或羊刃格，需看中餘氣
+  if (ss === '比肩' || ss === '劫財') {
+    // 羊刃格: 陽干見帝旺之支
+    const yangRenMap = {甲:'卯',丙:'午',戊:'午',庚:'酉',壬:'子'};
+    if (yangRenMap[ri] === mZhi) return '羊刃格';
+    // 看中氣/餘氣取格
+    for (let i = 1; i < cg.length; i++) {
+      const ss2 = getShiShen(ri, cg[i]);
+      if (ss2 !== '比肩' && ss2 !== '劫財') return ss2 + '格';
+    }
+    return '建祿格';
+  }
+  return ss + '格';
+}
+
+// 月令五行對應：地支所屬旺相季節
+const LING_WX = {寅:'木',卯:'木',巳:'火',午:'火',申:'金',酉:'金',亥:'水',子:'水',辰:'土',未:'土',戌:'土',丑:'土'};
+
+function getBodyStrength(sz) {
+  const ri = sz.day.gan;
+  const riWx = WX_GAN[ri];
+  const shengWo = {木:'水',火:'木',土:'火',金:'土',水:'金'}; // 生我
+  let score = 0;
+
+  // (1) 得令 (~40%): 月支五行是否生我或同我
+  const mWx = LING_WX[sz.month.zhi];
+  if (mWx === riWx) score += 40;           // 同我：得令
+  else if (shengWo[riWx] === mWx) score += 30; // 生我：相生得令
+  else if (KE[mWx] === riWx) score -= 25;  // 克我
+  else if (SHENG[riWx] === mWx) score -= 10; // 我生：洩氣
+
+  // (2) 得地 (~30%): 四柱地支藏干中，同我/生我的比例
+  let diSupport = 0, diTotal = 0;
+  [sz.year.zhi, sz.month.zhi, sz.day.zhi, sz.hour.zhi].forEach(z => {
+    (CANGGAN[z] || []).forEach((g, i) => {
+      const w = i === 0 ? 3 : (i === 1 ? 1.5 : 1); // 本氣>中氣>餘氣
+      const gWx = WX_GAN[g];
+      diTotal += w;
+      if (gWx === riWx || shengWo[riWx] === gWx) diSupport += w;
+    });
+  });
+  score += (diSupport / diTotal) * 30;
+
+  // (3) 得勢 (~30%): 年干、月干、時干中生我/同我
+  let shiSupport = 0;
+  [sz.year.gan, sz.month.gan, sz.hour.gan].forEach(g => {
+    const gWx = WX_GAN[g];
+    if (gWx === riWx || shengWo[riWx] === gWx) shiSupport++;
+  });
+  score += (shiSupport / 3) * 30;
+
+  return score >= 50 ? '身強' : '身弱';
+}
+
+function getXiYong(sz) {
+  const riWx = WX_GAN[sz.day.gan];
+  const strong = getBodyStrength(sz) === '身強';
+  // 生我, 同我, 我生, 我克, 克我
+  const shengWo = {木:'水',火:'木',土:'火',金:'土',水:'金'};
+  const keWo   = {木:'金',火:'水',土:'木',金:'火',水:'土'};
+  const woSheng = SHENG; // 我生(食傷)
+  const woKe   = KE;     // 我克(財)
+
+  if (strong) {
+    // 身強喜洩耗克: 克我(官殺), 我克(財), 我生(食傷)
+    return {
+      xi: [keWo[riWx], woKe[riWx], woSheng[riWx]],
+      ji: [shengWo[riWx], riWx]
+    };
+  } else {
+    // 身弱喜生扶: 生我(印), 同我(比劫)
+    return {
+      xi: [shengWo[riWx], riWx],
+      ji: [keWo[riWx], woKe[riWx], woSheng[riWx]]
+    };
+  }
+}
+
+function calcWuxing(sz) {
+  const count = {木:0,火:0,土:0,金:0,水:0};
+  [sz.year.gan,sz.year.zhi,sz.month.gan,sz.month.zhi,sz.day.gan,sz.day.zhi,sz.hour.gan,sz.hour.zhi]
+    .forEach(c => { const wx = WX_GAN[c]||WX_ZHI[c]; if(wx) count[wx]++; });
+  [sz.year.zhi,sz.month.zhi,sz.day.zhi,sz.hour.zhi]
+    .forEach(z => (CANGGAN[z]||[]).forEach(g => count[WX_GAN[g]]++));
+  return count;
+}
+
+// ============================================================
+// 大運
+// ============================================================
+function calcDaYun(sz, gender, y, m, d) {
+  const isYangYear = YY_GAN[sz.year.gan] === '陽';
+  const forward = (isYangYear && gender === 'male') || (!isYangYear && gender === 'female');
+
+  const jqs = calcJieQi(y);
+  const birthDate = new Date(y, m - 1, d);
+  // 大運只用12個「節」（非「氣」）: 小寒(0),立春(2),驚蟄(4),清明(6),立夏(8),芒種(10),小暑(12),立秋(14),白露(16),寒露(18),立冬(20),大雪(22)
+  const jieIndices = [0,2,4,6,8,10,12,14,16,18,20,22];
+  let nearDate;
+  if (forward) {
+    // 順行: 找出生日後最近的節
+    for (const ji of jieIndices) {
+      const d2 = new Date(y, jqs[ji].month - 1, jqs[ji].day);
+      if (d2 > birthDate) { nearDate = d2; break; }
+    }
+    if (!nearDate) {
+      const ny = calcJieQi(y + 1);
+      nearDate = new Date(y + 1, ny[0].month - 1, ny[0].day);
+    }
+  } else {
+    // 逆行: 找出生日前最近的節
+    for (let k = jieIndices.length - 1; k >= 0; k--) {
+      const ji = jieIndices[k];
+      const d2 = new Date(y, jqs[ji].month - 1, jqs[ji].day);
+      if (d2 < birthDate) { nearDate = d2; break; }
+    }
+    if (!nearDate) {
+      const py = calcJieQi(y - 1);
+      nearDate = new Date(y - 1, py[22].month - 1, py[22].day); // 大雪
+    }
+  }
+  const diffDays = Math.abs(birthDate - nearDate) / 86400000;
+  const startAge = Math.max(1, Math.round(diffDays / 3));
+
+  const mGanIdx = TG.indexOf(sz.month.gan);
+  const mZhiIdx = DZ.indexOf(sz.month.zhi);
+  const p = (n, max) => ((n % max) + max) % max;
+
+  return {
+    startAge,
+    dayuns: Array.from({length: 10}, (_, i) => {
+      const step = forward ? i + 1 : -(i + 1);
+      const age = startAge + i * 10;
+      return {
+        gan: TG[p(mGanIdx + step, 10)],
+        zhi: DZ[p(mZhiIdx + step, 12)],
+        startAge: age, endAge: age + 9,
+        startYear: y + age
+      };
+    })
+  };
+}
+
+function getLiuNian(startYear, count) {
+  return Array.from({length: count}, (_, i) => {
+    const yr = startYear + i;
+    return {
+      year: yr,
+      gan: TG[((yr - 4) % 10 + 10) % 10],
+      zhi: DZ[((yr - 4) % 12 + 12) % 12]
+    };
+  });
+}
+
+// ============================================================
+// 紫微斗數
+// ============================================================
+const BRIGHTNESS = {
+  // [子,丑,寅,卯,辰,巳,午,未,申,酉,戌,亥] — 依 iztro 資料校正
+  '紫微': ["平","廟","旺","旺","得","旺","廟","廟","旺","旺","得","旺"],
+  '天機': ["廟","閒","得","旺","利","平","廟","閒","得","旺","利","平"],
+  '太陽': ["閒","陷","旺","廟","旺","旺","旺","得","得","閒","陷","閒"],
+  '武曲': ["旺","廟","得","利","廟","平","旺","廟","得","利","廟","平"],
+  '天同': ["旺","陷","利","平","平","廟","閒","陷","旺","平","平","廟"],
+  '廉貞': ["平","利","廟","平","利","閒","平","利","廟","平","利","閒"],
+  '天府': ["廟","廟","廟","得","廟","得","旺","廟","得","旺","廟","得"],
+  '太陰': ["廟","廟","旺","閒","閒","閒","陷","陷","利","陷","旺","廟"],
+  '貪狼': ["旺","廟","平","利","廟","閒","旺","廟","平","利","廟","閒"],
+  '巨門': ["旺","陷","廟","廟","閒","旺","旺","陷","廟","廟","閒","旺"],
+  '天相': ["廟","廟","廟","閒","得","得","廟","得","廟","閒","得","得"],
+  '天梁': ["廟","旺","廟","廟","廟","閒","廟","旺","閒","得","廟","閒"],
+  '七殺': ["旺","廟","廟","旺","廟","平","旺","廟","廟","廟","廟","平"],
+  '破軍': ["廟","旺","得","閒","旺","平","廟","旺","得","閒","旺","平"],
+  '文昌': ["得","廟","閒","利","得","廟","閒","利","得","廟","閒","利"],
+  '文曲': ["得","廟","平","旺","得","廟","閒","旺","得","廟","閒","旺"],
+  '左輔': ["廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟"],
+  '右弼': ["廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟"],
+  '天魁': ["廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟"],
+  '天鉞': ["廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟"],
+  '祿存': ["廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟"],
+  '擎羊': ["閒","廟","","閒","廟","","閒","廟","","閒","廟",""],
+  '陀羅': ["","廟","閒","","廟","閒","","廟","閒","","廟","閒"],
+  '天馬': ["廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟","廟"],
+  '火星': ["閒","得","廟","利","閒","得","廟","利","閒","得","廟","利"],
+  '鈴星': ["閒","得","廟","利","閒","得","廟","利","閒","得","廟","利"],
+  '地空': ["","","","","","","","","","","",""],
+  '地劫': ["","","","","","","","","","","",""],
+};
+const BRT_LABEL = {'廟':'廟','旺':'旺','得':'得','利':'利','平':'','閒':'','陷':'陷'};
+function getBrt(star, zhiIdx) {
+  const arr = BRIGHTNESS[star];
+  if (!arr) return '';
+  const raw = arr[zhiIdx] || '';
+  return raw; // 閒/平 回傳原值但 CSS 不顯示
+}
+function getBrtClass(brt) {
+  const map = {'廟':'廟','旺':'旺','得':'得','利':'利','陷':'陷'};
+  return map[brt] || '';
+}
+
+const PALACE_NAMES = ['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','僕役','官祿','田宅','福德','父母'];
+const ZODIACS = ['鼠','牛','虎','兔','龍','蛇','馬','羊','猴','雞','狗','豬'];
+const SIHUA_TABLE = {
+  甲:{lu:'廉貞',quan:'破軍',ke:'武曲',ji:'太陽'},
+  乙:{lu:'天機',quan:'天梁',ke:'紫微',ji:'太陰'},
+  丙:{lu:'天同',quan:'天機',ke:'文昌',ji:'廉貞'},
+  丁:{lu:'太陰',quan:'天同',ke:'天機',ji:'巨門'},
+  戊:{lu:'貪狼',quan:'太陰',ke:'右弼',ji:'天機'},
+  己:{lu:'武曲',quan:'貪狼',ke:'天梁',ji:'文曲'},
+  庚:{lu:'太陽',quan:'武曲',ke:'太陰',ji:'天同'},
+  辛:{lu:'巨門',quan:'太陽',ke:'文曲',ji:'文昌'},
+  壬:{lu:'天梁',quan:'紫微',ke:'左輔',ji:'武曲'},
+  癸:{lu:'破軍',quan:'巨門',ke:'太陰',ji:'貪狼'}
+};
+
+const NAYIN60 = [0,0,1,1,2,2,3,3,0,0,1,1,4,4,3,3,0,0,2,2,4,4,3,3,1,1,2,2,4,4,0,0,1,1,2,2,3,3,0,0,1,1,4,4,3,3,0,0,2,2,4,4,3,3,1,1,2,2,4,4];
+const JU_FROM_NAYIN = {0:4, 1:6, 2:3, 3:5, 4:2}; // 納音→五行局
+const p12 = (i) => ((i % 12) + 12) % 12;
+
+function get60Idx(ganIdx, zhiIdx) {
+  for (let i = ganIdx; i < 60; i += 10) if (i % 12 === zhiIdx) return i;
+  return ganIdx;
+}
+
+function calcMingZhi(lunarMonth, hourVal) {
+  const hourZhi = Math.floor(hourVal / 2);
+  // 命宮: 寅(2)起正月，順數月份，逆數時辰
+  // 公式: 寅(2) + (月-1) - 時支 = 1 + 月 - 時支
+  return p12(1 + lunarMonth - hourZhi);
+}
+
+function getMingGan(lunarYear, mingIdx) {
+  const yGanIdx = (((lunarYear - 4) % 10) + 10) % 10;
+  // 五虎遁: 甲己→丙寅, 乙庚→戊寅, 丙辛→庚寅, 丁壬→壬寅, 戊癸→甲寅
+  const yinBase = [2,4,6,8,0][yGanIdx % 5];
+  const steps   = p12(mingIdx - 2);
+  return TG[(yinBase + steps) % 10];
+}
+
+// 紫微安星法：用農曆日數和五行局數定紫微位置
+// 口訣：局數除日數，商數宮前走；若見數無餘，便要起虎口；
+//       日數小於局，還直宮中守。
+// 參考 iztro (SylarLong/iztro) getStartIndex 演算法
+function calcZiwei(lunarDay, ju) {
+  let offset = -1;
+  let quotient;
+  do {
+    offset++;
+    const divisor = lunarDay + offset;
+    quotient = Math.floor(divisor / ju);
+    // remainder must be 0 to stop
+  } while ((lunarDay + offset) % ju !== 0);
+
+  quotient = quotient % 12;
+  // 以商-1為寅宮起始位置（palace index, 寅=0）
+  let palaceIdx = quotient - 1;
+  if (offset % 2 === 0) {
+    palaceIdx += offset;  // 偶數：順行(加)
+  } else {
+    palaceIdx -= offset;  // 奇數：逆行(減)
+  }
+  // 轉為地支索引（子=0, 丑=1, 寅=2, ...）
+  return p12(palaceIdx + 2);
+}
+
+function placePrimary(zIdx) {
+  // 天府: 與紫微以寅(2)為軸對稱 → 天府 = p12(4 - zIdx)
+  const F = p12(4 - zIdx);
+  return {
+    // 紫微系（逆布，間距: 0,-1,-3,-4,-5,-8）
+    紫微: zIdx,
+    天機: p12(zIdx - 1),
+    太陽: p12(zIdx - 3),
+    武曲: p12(zIdx - 4),
+    天同: p12(zIdx - 5),
+    廉貞: p12(zIdx + 4),  // = p12(zIdx - 8)
+    // 天府系（順布，間距: 0,+1,+2,+3,+4,+5,+6,+10）
+    天府: F,
+    太陰: p12(F + 1),
+    貪狼: p12(F + 2),
+    巨門: p12(F + 3),
+    天相: p12(F + 4),
+    天梁: p12(F + 5),
+    七殺: p12(F + 6),
+    破軍: p12(F + 10)
+  };
+}
+
+function placeAux(lunarYear, lunarMonth, lunarDay, hourVal) {
+  const hourZhi = Math.floor(hourVal / 2);
+  const yZhiIdx = (((lunarYear - 4) % 12) + 12) % 12;
+  const yGanIdx = (((lunarYear - 4) % 10) + 10) % 10;
+  const aux = {};
+  aux['文昌'] = p12(10 - hourZhi);  // 從戌逆布時辰
+  aux['文曲'] = p12(4 + hourZhi); // 文曲: 辰起子時順布
+  aux['左輔'] = p12(lunarMonth + 3);
+  aux['右弼'] = p12(11 - lunarMonth);
+  // 天魁天鉞: 甲戊庚魁丑鉞未, 乙己魁子鉞申, 丙丁魁亥鉞酉, 壬癸魁卯鉞巳, 辛魁午鉞寅
+  const ky = [[1,7],[0,8],[11,9],[11,9],[1,7],[0,8],[1,7],[6,2],[3,5],[3,5]];
+  [aux['天魁'],aux['天鉞']] = ky[yGanIdx % 10];
+  const luzon = [2,3,5,6,5,6,8,9,11,0][yGanIdx % 10];
+  aux['祿存'] = luzon;
+  aux['擎羊'] = p12(luzon + 1);
+  aux['陀羅'] = p12(luzon - 1);
+  const tianmaMap = {2:8,6:8,10:8, 8:2,0:2,4:2, 11:5,3:5,7:5, 5:11,9:11,1:11};
+  aux['天馬'] = tianmaMap[yZhiIdx] ?? 2;
+  aux['地空'] = p12(11 - hourZhi);  // 子時起亥, 逆布
+  aux['地劫'] = p12(11 + hourZhi);  // 子時起亥, 順布
+  // 火星: 依年支三合局決定起始宮位，再順數時辰
+  // 寅午戌→丑起, 申子辰→寅起, 巳酉丑→卯起, 亥卯未→酉起
+  const huoBase = [2,5,1,9,2,5,1,9,2,5,1,9];
+  // index: 子=0→寅(2), 丑=1→卯(5?不對)
+  // 正確: 子屬「申子辰」→火星起寅(2), 丑屬「巳酉丑」→火星起卯(3)
+  // 寅屬「寅午戌」→火星起丑(1), 卯屬「亥卯未」→火星起酉(9)
+  const huoBaseMap = {
+    0:2, 4:2, 8:2,     // 申子辰 → 寅
+    2:1, 6:1, 10:1,    // 寅午戌 → 丑
+    1:3, 5:3, 9:3,     // 巳酉丑 → 卯
+    3:9, 7:9, 11:9     // 亥卯未 → 酉
+  };
+  aux['火星'] = p12((huoBaseMap[yZhiIdx] ?? 2) + hourZhi);
+  // 鈴星: 同樣依年支三合局
+  // 寅午戌→卯起, 申子辰→戌起, 巳酉丑→戌起, 亥卯未→戌起
+  const lingBaseMap = {
+    0:10, 4:10, 8:10,   // 申子辰 → 戌
+    2:3,  6:3,  10:3,   // 寅午戌 → 卯
+    1:10, 5:10, 9:10,   // 巳酉丑 → 戌
+    3:10, 7:10, 11:10   // 亥卯未 → 戌
+  };
+  aux['鈴星'] = p12((lingBaseMap[yZhiIdx] ?? 10) + hourZhi);
+  return aux;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderBazi(sz) {
+  const ri = sz.day.gan;
+  const cols = [
+    { label:'年　柱', ...sz.year, isDay:false },
+    { label:'月　柱', ...sz.month, isDay:false },
+    { label:'日　柱', ...sz.day, isDay:true },
+    { label:'時　柱', ...sz.hour, isDay:false }
+  ];
+
+  const ganClass = g => YY_GAN[g] === '陽' ? 'stem-yang' : 'stem-yin';
+  const ssBadge  = (ss) => `<span class="ss-badge ${SS_CLASS[ss]||''}">${ss}</span>`;
+
+  document.getElementById('baziTable').innerHTML = `
+    <thead><tr>
+      <th style="width:72px;"> </th>
+      ${cols.map(c=>`<th>${c.label}</th>`).join('')}
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="row-label">十　神</td>
+        ${cols.map(c => `<td>${c.isDay ? ssBadge('日主') : ssBadge(getShiShen(ri,c.gan))}</td>`).join('')}
+      </tr>
+      <tr>
+        <td class="row-label">天　干</td>
+        ${cols.map(c=>`<td class="cell-tiangan ${ganClass(c.gan)}">${c.gan}</td>`).join('')}
+      </tr>
+      <tr>
+        <td class="row-label">地　支</td>
+        ${cols.map(c=>`<td class="cell-dizhi">${c.zhi}</td>`).join('')}
+      </tr>
+      <tr>
+        <td class="row-label">五　行</td>
+        ${cols.map(c=>`<td style="font-size:13px;">
+          <span style="color:${WX_COLORS[WX_GAN[c.gan]]};">${WX_GAN[c.gan]}</span>
+          <span style="color:#B8AFA5;"> / </span>
+          <span style="color:${WX_COLORS[WX_ZHI[c.zhi]]};">${WX_ZHI[c.zhi]}</span>
+        </td>`).join('')}
+      </tr>
+    </tbody>`;
+
+  // 藏干
+  let cgHtml = `<thead><tr>
+    <th style="width:72px;"> </th>
+    ${cols.map(c=>`<th>${c.zhi}（${WX_ZHI[c.zhi]}）</th>`).join('')}
+  </tr></thead><tbody>`;
+  ['本氣','中氣','餘氣'].forEach((lbl, i) => {
+    cgHtml += `<tr><td class="row-label">${lbl}</td>`;
+    cols.forEach(c => {
+      const cg = CANGGAN[c.zhi] || [];
+      if (cg[i]) {
+        const ss = getShiShen(ri, cg[i]);
+        cgHtml += `<td>
+          <span class="${ganClass(cg[i])}" style="font-size:17px;font-weight:700;">${cg[i]}</span>
+          ${ssBadge(ss)}
+        </td>`;
+      } else {
+        cgHtml += `<td style="color:#B8AFA5;">—</td>`;
+      }
+    });
+    cgHtml += '</tr>';
+  });
+  cgHtml += '</tbody>';
+  document.getElementById('cangganTable').innerHTML = cgHtml;
+}
+
+function renderMingge(sz) {
+  const mingge   = getMingge(sz);
+  const strength = getBodyStrength(sz);
+  const xiyong   = getXiYong(sz);
+  const wxCount  = calcWuxing(sz);
+
+  document.getElementById('minggeSection').innerHTML = `
+    <div class="section-divider"><span class="section-title">命 格 分 析</span></div>
+    <div class="mingge-grid">
+      <div>
+        <div class="badge-row">
+          <span class="info-badge badge-purple">格局：${mingge}</span>
+          <span class="info-badge ${strength==='身強'?'badge-red':'badge-water'}">日元：${strength}</span>
+          <span class="info-badge badge-green">日主：${sz.day.gan}（${WX_GAN[sz.day.gan]}）</span>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div class="sub-label">喜用神（${strength === '身強' ? '宜洩耗克' : '宜生扶'}）</div>
+          <div class="badge-row">
+            ${xiyong.xi.map(wx=>`<span class="info-badge xi-badge" style="border-color:${WX_COLORS[wx]}55;color:${WX_COLORS[wx]};">喜 ${wx}</span>`).join('')}
+          </div>
+        </div>
+        <div>
+          <div class="sub-label">忌用神（${strength === '身強' ? '忌生扶' : '忌洩耗克'}）</div>
+          <div class="badge-row">
+            ${xiyong.ji.map(wx=>`<span class="info-badge ji-badge" style="border-color:${WX_COLORS[wx]}55;">忌 ${wx}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="sub-label">五行分布</div>
+        ${['木','火','土','金','水'].map(wx => `
+          <div class="wx-bar-row">
+            <span class="wx-label" style="color:${WX_COLORS[wx]};">${wx}</span>
+            <div class="wx-track">
+              <div class="wx-fill" style="width:${Math.min(100,wxCount[wx]*13)}%;background:${WX_COLORS[wx]};"></div>
+            </div>
+            <span class="wx-count">${wxCount[wx]}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderDaYun(sz, gender, y, m, d) {
+  const curr = new Date().getFullYear();
+  const { startAge, dayuns } = calcDaYun(sz, gender, y, m, d);
+  let html = `<div class="dayun-header">起運歲數：${startAge} 歲</div><div class="dayun-grid">`;
+  dayuns.forEach(dyn => {
+    const isCurr = curr >= dyn.startYear && curr < dyn.startYear + 10;
+    const gc = YY_GAN[dyn.gan] === '陽' ? '#D35400' : '#2980B9';
+    html += `<div class="dayun-item ${isCurr?'current':''}">
+      <div class="dayun-age">${dyn.startAge}～${dyn.endAge}歲</div>
+      <div class="dayun-year">${dyn.startYear}</div>
+      <div class="dayun-stem" style="color:${gc};">${dyn.gan}</div>
+      <div class="dayun-branch">${dyn.zhi}</div>
+      ${isCurr?'<div class="dayun-cur-tag">▶ 當前</div>':''}
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('dayunContainer').innerHTML = html;
+}
+
+function renderLiuNian(birthYear) {
+  const curr = new Date().getFullYear();
+  const years = getLiuNian(curr - 5, 18);
+  document.getElementById('liuNianGrid').innerHTML = years.map(yn => {
+    const isCurr = yn.year === curr;
+    const sh = SIHUA_TABLE[yn.gan] || {};
+    const gc = YY_GAN[yn.gan] === '陽' ? '#D35400' : '#2980B9';
+    return `<div class="liunian-item ${isCurr?'current':''}">
+      <div class="liunian-year">${yn.year}</div>
+      <div class="liunian-gz">
+        <span style="color:${gc};">${yn.gan}</span><span style="color:#495A6A;">${yn.zhi}</span>
+      </div>
+      <div class="liunian-sh">
+        <span style="color:#1B6D28;">祿:${sh.lu||'?'}</span><br>
+        <span style="color:#A12020;">忌:${sh.ji||'?'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== 紫微 =====
+function renderZiwei(sz, gender, lunarData, birthYear) {
+  const hourVal   = parseInt(document.getElementById('inputHour').value);
+  const lunarYear = sz.lunarYear;
+  const yGanIdx   = (((lunarYear - 4) % 10) + 10) % 10;
+  const yearGan   = TG[yGanIdx];
+  const sihua     = SIHUA_TABLE[yearGan] || {};
+
+  const mingIdx  = calcMingZhi(lunarData.month, hourVal);
+  const shenIdx  = p12(1 + lunarData.month + Math.floor(hourVal/2)); // 身宮: 從寅起正月順布月, 順布時
+  const mingGan  = getMingGan(lunarYear, mingIdx);
+
+  const mingGanIdx = TG.indexOf(mingGan);
+  const idx60_for_ju = get60Idx(mingGanIdx, mingIdx);
+  const juForCalc    = JU_FROM_NAYIN[NAYIN60[idx60_for_ju]];
+  const zwIdx    = calcZiwei(lunarData.day, juForCalc);
+  const primary  = placePrimary(zwIdx);
+  const aux      = placeAux(lunarYear, lunarData.month, lunarData.day, hourVal);
+
+  // 命主: 依命宮地支
+  // 子=貪狼,丑=巨門,寅=祿存,卯=文曲,辰=廉貞,巳=武曲,午=破軍,未=武曲,申=廉貞,酉=文曲,戌=祿存,亥=巨門
+  const MINGZHU_BY_ZHI = ['貪狼','巨門','祿存','文曲','廉貞','武曲','破軍','武曲','廉貞','文曲','祿存','巨門'];
+  // 身主依年支: 子=火星,丑=天相,寅=天梁,卯=天同,辰=文昌,巳=天機,午=火星,未=天相,申=天梁,酉=天同,戌=文昌,亥=天機
+  const SHENZHU = ['火星','天相','天梁','天同','文昌','天機','火星','天相','天梁','天同','文昌','天機'];
+  const idx60_m = get60Idx(mingGanIdx, mingIdx);
+  const juVal   = JU_FROM_NAYIN[NAYIN60[idx60_m]];
+  const mingzhu = MINGZHU_BY_ZHI[mingIdx];
+  const yZhiIdx_z = (((lunarYear-4)%12)+12)%12;
+  const shenzhu = SHENZHU[yZhiIdx_z];
+  // 宮干: 甲己→子起甲, 乙庚→子起丙, 丙辛→子起戊, 丁壬→子起庚, 戊癸→子起壬
+  const gongGanBase = [0,2,4,6,8][yGanIdx % 5];
+
+  // 建立宮格資料
+  const pData = {};
+  for (let i = 0; i < 12; i++) {
+    const zhiIdx = p12(mingIdx - i);
+    pData[zhiIdx] = { name: PALACE_NAMES[i], stars: [], aux: [], qaStars: [] };
+  }
+  Object.entries(primary).forEach(([star, idx]) => {
+    if (!pData[idx]) pData[idx] = { stars:[], aux:[], qaStars:[] };
+    let sh = '';
+    if (star===sihua.lu) sh='lu'; else if (star===sihua.quan) sh='quan';
+    else if (star===sihua.ke) sh='ke'; else if (star===sihua.ji) sh='ji';
+    pData[idx].stars.push({ name:star, sh });
+  });
+  // 擎羊陀羅用特殊列，其他輔星走aux
+  const QA_STARS = new Set(['擎羊','陀羅','地空','地劫','火星','鈴星']);
+  Object.entries(aux).forEach(([star, idx]) => {
+    if (!pData[idx]) pData[idx] = { stars:[], aux:[], qaStars:[] };
+    let sh = '';
+    if (star===sihua.lu) sh='lu'; else if (star===sihua.quan) sh='quan';
+    else if (star===sihua.ke) sh='ke'; else if (star===sihua.ji) sh='ji';
+    if (QA_STARS.has(star)) pData[idx].qaStars.push({ name:star, sh });
+    else pData[idx].aux.push({ name:star, sh });
+  });
+
+  // 大限方向
+  const forward = (yGanIdx % 2 === 0 && gender === 'male') || (yGanIdx % 2 !== 0 && gender === 'female');
+  const curr = new Date().getFullYear();
+
+  // 盤面順時針從巳：上排左→右(巳午未申)→右欄(酉戌)→下排右→左(亥子丑寅)→左欄(卯辰)
+  const boardZhi = [5,6,7,8,9,10,11,0,1,2,3,4];
+
+  const cells = boardZhi.map((zhiIdx, pos) => {
+    const pd = pData[zhiIdx] || { name:'', stars:[], aux:[], qaStars:[] };
+    const isMing = zhiIdx === mingIdx;
+    const isShen = zhiIdx === shenIdx;
+
+    // 大限: 以命宮為0, 依順逆方向計算各宮距離, 起運=juVal
+    const daxianIndex = forward
+      ? (zhiIdx - mingIdx + 12) % 12
+      : (mingIdx - zhiIdx + 12) % 12;
+    const daxianAge   = juVal + daxianIndex * 10;
+    const daxianStart = birthYear + daxianAge;
+    const isCurrDx = curr >= daxianStart && curr < daxianStart + 10;
+
+    // 宮干: 依地支固定計算
+    const gongGanIdx = (gongGanBase + zhiIdx) % 10;
+    const gongGan = TG[gongGanIdx];
+
+    const nameHtml = pd.name
+      + (isMing?'<span class="sih-lu" style="font-size:9px;margin-left:2px;">命</span>':'')
+      + (isShen?'<span class="sih-ke" style="font-size:9px;margin-left:2px;">身</span>':'');
+
+    const auxHtml = pd.aux.map(a => {
+      const brt = getBrt(a.name, zhiIdx);
+      const brtCls2=getBrtClass(brt), brtLbl2=BRT_LABEL[brt]||'';
+      const brtS = (brtCls2&&brtLbl2) ? `<span class="brt-tag brt-${brtCls2}">${brtLbl2}</span>` : '';
+      const shS = a.sh ? `<span class="${a.sh==='ji'?'sih-ji':a.sh==='lu'?'sih-lu':a.sh==='ke'?'sih-ke':'sih-quan'}">${{lu:'祿',quan:'權',ke:'科',ji:'忌'}[a.sh]}</span>` : '';
+      return `<div class="star-aux-item">${a.name}${brtS}${shS}</div>`;
+    }).join('');
+    const qaRow = pd.qaStars.length
+      ? pd.qaStars.map(a=>{
+          const brt=getBrt(a.name,zhiIdx);
+          const brtCls3=getBrtClass(brt),brtLbl3=BRT_LABEL[brt]||'';
+          const brtS=(brtCls3&&brtLbl3)?`<span class="brt-tag brt-${brtCls3}">${brtLbl3}</span>`:'';
+          const shS=a.sh?`<span class="${a.sh==='ji'?'sih-ji':a.sh==='lu'?'sih-lu':a.sh==='ke'?'sih-ke':'sih-quan'}">${{lu:'祿',quan:'權',ke:'科',ji:'忌'}[a.sh]}</span>`:'';
+          return `<div class="star-qa-item">${a.name}${brtS}${shS}</div>`;
+        }).join('') : '';
+
+    return `<div class="palace" style="${isCurrDx?'box-shadow:inset 0 0 0 1.5px var(--primary);':''}">
+      ${isCurrDx?'<div class="palace-mark"></div>':''}
+      <div class="palace-top-row">
+        <span class="palace-name">${nameHtml}</span>
+        <span class="palace-ganzhi">${gongGan}${DZ[zhiIdx]}</span>
+      </div>
+      <div class="palace-age">${daxianAge}～${daxianAge+9}歲</div>
+      <div class="palace-stars">
+        ${pd.stars.map(s=>{
+          const brt=getBrt(s.name, zhiIdx);
+          const brtCls=getBrtClass(brt);
+          const brtLbl=BRT_LABEL[brt]||'';
+          const brtHtml=(brtCls&&brtLbl)?`<span class="brt-tag brt-${brtCls}">${brtLbl}</span>`:'';
+          const shHtml=s.sh?`<span class="sihua-tag sihua-${s.sh}">${{lu:'祿',quan:'權',ke:'科',ji:'忌'}[s.sh]}</span>`:'';
+          return `<div class="star-main">${s.name}${brtHtml}${shHtml}</div>`;
+        }).join('')}
+        ${auxHtml||''}
+        ${qaRow}
+      </div>
+    </div>`;
+  });
+
+  const name   = document.getElementById('inputName').value || '命主';
+  const zodiac = ZODIACS[((lunarYear-4)%12+12)%12];
+  const centerHtml = `
+    <div class="palace-center">
+      <div class="center-name">${name}</div>
+      <div class="center-line"></div>
+      <div class="center-info">
+        ${gender==='male'?'男命':'女命'} · 命宮${DZ[mingIdx]}<br>
+        身宮：${DZ[shenIdx]} · 生肖${zodiac}<br>
+        ${lunarYear}農曆年（${yearGan}年）
+      </div>
+      <div class="center-line"></div>
+      <div class="center-sihua" style="font-size:11px;line-height:2;">
+        <span style="color:var(--text-secondary);">命主</span>
+        <span style="color:var(--primary);font-weight:700;margin:0 4px;">${mingzhu}</span>
+        <span style="color:var(--text-secondary);">身主</span>
+        <span style="color:var(--primary);font-weight:700;margin-left:4px;">${shenzhu}</span>
+        <br>
+        <span style="color:var(--text-muted);font-size:10px;">本命四化</span><br>
+        <span class="sih-lu">祿${sihua.lu}</span>
+        <span class="sih-quan" style="margin:0 3px;">權${sihua.quan}</span>
+        <span class="sih-ke">科${sihua.ke}</span>
+        <span class="sih-ji" style="margin-left:3px;">忌${sihua.ji}</span>
+      </div>
+    </div>`;
+
+  // 組合4×4 grid:
+  // Row0(top): cells[9] cells[8] cells[7] cells[6]
+  // Row0(top): cells[0]=巳  cells[1]=午  cells[2]=未  cells[3]=申
+  // Row1:      cells[11]=辰  CENTER  CENTER  cells[4]=酉
+  // Row2:      cells[10]=卯  CENTER  CENTER  cells[5]=戌
+  // Row3(bot): cells[9]=寅  cells[8]=丑  cells[7]=子  cells[6]=亥
+  document.getElementById('ziweiBoard').innerHTML =
+    cells[0] + cells[1] + cells[2] + cells[3] +
+    cells[11] + centerHtml + cells[4] +
+    cells[10] + cells[5] +
+    cells[9] + cells[8] + cells[7] + cells[6];
+}
+
+function renderLiuNianSihua() {
+  const curr = new Date().getFullYear();
+  const years = getLiuNian(curr - 5, 12);
+  document.getElementById('liuNianSihua').innerHTML = years.map(yn => {
+    const sh = SIHUA_TABLE[yn.gan] || {};
+    const isCurr = yn.year === curr;
+    const gc = YY_GAN[yn.gan] === '陽' ? '#D35400' : '#2980B9';
+    return `<div class="sihua-card ${isCurr?'current':''}">
+      <div class="liunian-year">${yn.year}</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">
+        <span style="color:${gc};">${yn.gan}</span><span style="color:#495A6A;">${yn.zhi}</span>
+      </div>
+      <div style="font-size:10px;line-height:1.8;">
+        <span class="sih-lu">祿:${sh.lu||'?'}</span><br>
+        <span class="sih-quan">權:${sh.quan||'?'}</span><br>
+        <span class="sih-ke">科:${sh.ke||'?'}</span><br>
+        <span class="sih-ji">忌:${sh.ji||'?'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// MAIN
+// ============================================================
+function calculate() {
+  const year   = parseInt(document.getElementById('inputYear').value);
+  const month  = parseInt(document.getElementById('inputMonth').value);
+  const day    = parseInt(document.getElementById('inputDay').value);
+  const hour   = parseInt(document.getElementById('inputHour').value);
+  const gender = document.getElementById('inputGender').value;
+
+  document.getElementById('loadingMask').classList.add('active');
+  setTimeout(() => {
+    try {
+      const sz     = calcSizhu(year, month, day, hour);
+      const lunar  = solar2lunar(year, month, day);
+      renderBazi(sz);
+      renderMingge(sz);
+      renderDaYun(sz, gender, year, month, day);
+      renderLiuNian(year);
+      renderZiwei(sz, gender, lunar, year);
+      renderLiuNianSihua();
+      const el = document.getElementById('results');
+      el.style.display = 'block';
+      el.scrollIntoView({ behavior:'smooth', block:'start' });
+    } catch(e) {
+      console.error(e);
+      alert('計算錯誤：' + e.message);
+    }
+    document.getElementById('loadingMask').classList.remove('active');
+  }, 500);
+}
+
+function switchTab(tab) {
+  document.getElementById('baziPanel').style.display  = tab==='bazi'  ? 'block' : 'none';
+  document.getElementById('ziweiPanel').style.display = tab==='ziwei' ? 'block' : 'none';
+  document.getElementById('tab1').classList.toggle('active', tab==='bazi');
+  document.getElementById('tab2').classList.toggle('active', tab==='ziwei');
+}
+
+// Init
+(function init() {
+  const yr = document.getElementById('inputYear');
+  for (let y = 2060; y >= 1940; y--)
+    yr.innerHTML += `<option value="${y}" ${y===1980?'selected':''}>${y}年</option>`;
+  const mo = document.getElementById('inputMonth');
+  for (let m = 1; m <= 12; m++)
+    mo.innerHTML += `<option value="${m}" ${m===2?'selected':''}>${m}月</option>`;
+  const da = document.getElementById('inputDay');
+  for (let d = 1; d <= 31; d++)
+    da.innerHTML += `<option value="${d}" ${d===4?'selected':''}>${d}日</option>`;
+  document.getElementById('inputHour').value = '12';
+  document.getElementById('inputName').value = '葉信宏';
+})();
+</script>
+</body>
+</html>
