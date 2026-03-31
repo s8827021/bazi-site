@@ -709,6 +709,11 @@ const SS_CLASS = {
   比肩:'ss-peer', 劫財:'ss-rob', 日主:'ss-peer'
 };
 
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function getShiShen(ri, other) {
   const w1 = WX_GAN[ri], w2 = WX_GAN[other];
   const y1 = YY_GAN[ri], y2 = YY_GAN[other];
@@ -757,10 +762,7 @@ function solar2lunar(year, month, day) {
   for (let y = BASE_YEAR; y <= 2059; y++) {
     const idx = y - BASE_YEAR;
     const [nm, nd] = NY_TABLE[idx];
-    const [nm2, nd2] = NY_TABLE[idx + 1] || [12, 31];
     const d1 = new Date(y,          nm  - 1, nd);
-    const d2 = new Date(y + (nm2 < nm ? 1 : (nm2 === nm && nd2 < nd ? 1 : 0)), nm2 - 1, nd2);
-    // 更簡單：直接算下一年正月初一
     const nextNY = NY_TABLE[idx + 1];
     const d2real = nextNY ? new Date(y + 1, nextNY[0] - 1, nextNY[1]) : new Date(y + 1, 1, 15);
     if (target >= d1 && target < d2real) {
@@ -781,7 +783,7 @@ function solar2lunar(year, month, day) {
       }
     }
   }
-  return { year: year - 1, month: 12, day: 1 };
+  throw new Error(`農曆轉換失敗：${year}/${month}/${day} 超出支援範圍 (1940-2060)`);
 }
 
 // ============================================================
@@ -816,6 +818,7 @@ function calcSizhu(year, month, day, hour) {
   const base = new Date(1900, 0, 1);
   const target = new Date(year, month - 1, day);
   const diff = Math.floor((target - base) / 86400000);
+  // 1900-01-01 = 甲戌日（六十甲子 index 10）
   const dGzIdx = ((diff + 10) % 60 + 60) % 60;
   const dGanIdx = dGzIdx % 10;
   const dZhiIdx = dGzIdx % 12;
@@ -896,9 +899,9 @@ function getBodyStrength(sz) {
   return score >= 50 ? '身強' : '身弱';
 }
 
-function getXiYong(sz) {
+function getXiYong(sz, strength) {
   const riWx = WX_GAN[sz.day.gan];
-  const strong = getBodyStrength(sz) === '身強';
+  const strong = (strength || getBodyStrength(sz)) === '身強';
   // 生我, 同我, 我生, 我克, 克我
   const shengWo = {木:'水',火:'木',土:'火',金:'土',水:'金'};
   const keWo   = {木:'金',火:'水',土:'木',金:'火',水:'土'};
@@ -942,21 +945,21 @@ function calcDaYun(sz, gender, y, m, d) {
   const jieIndices = [0,2,4,6,8,10,12,14,16,18,20,22];
   let nearDate;
   if (forward) {
-    // 順行: 找出生日後最近的節
+    // 順行: 找出生日當天或之後最近的節
     for (const ji of jieIndices) {
       const d2 = new Date(y, jqs[ji].month - 1, jqs[ji].day);
-      if (d2 > birthDate) { nearDate = d2; break; }
+      if (d2 >= birthDate) { nearDate = d2; break; }
     }
     if (!nearDate) {
       const ny = calcJieQi(y + 1);
       nearDate = new Date(y + 1, ny[0].month - 1, ny[0].day);
     }
   } else {
-    // 逆行: 找出生日前最近的節
+    // 逆行: 找出生日當天或之前最近的節
     for (let k = jieIndices.length - 1; k >= 0; k--) {
       const ji = jieIndices[k];
       const d2 = new Date(y, jqs[ji].month - 1, jqs[ji].day);
-      if (d2 < birthDate) { nearDate = d2; break; }
+      if (d2 <= birthDate) { nearDate = d2; break; }
     }
     if (!nearDate) {
       const py = calcJieQi(y - 1);
@@ -1246,7 +1249,7 @@ function renderBazi(sz) {
 function renderMingge(sz) {
   const mingge   = getMingge(sz);
   const strength = getBodyStrength(sz);
-  const xiyong   = getXiYong(sz);
+  const xiyong   = getXiYong(sz, strength);
   const wxCount  = calcWuxing(sz);
 
   document.getElementById('minggeSection').innerHTML = `
@@ -1446,7 +1449,7 @@ function renderZiwei(sz, gender, lunarData, birthYear) {
     </div>`;
   });
 
-  const name   = document.getElementById('inputName').value || '命主';
+  const name   = escapeHtml(document.getElementById('inputName').value) || '命主';
   const zodiac = ZODIACS[((lunarYear-4)%12+12)%12];
   const centerHtml = `
     <div class="palace-center">
@@ -1516,6 +1519,13 @@ function calculate() {
   const day    = parseInt(document.getElementById('inputDay').value);
   const hour   = parseInt(document.getElementById('inputHour').value);
   const gender = document.getElementById('inputGender').value;
+
+  // 驗證日期有效性（防止 2/30、2/31 等無效組合）
+  const testDate = new Date(year, month - 1, day);
+  if (testDate.getMonth() !== month - 1) {
+    alert('日期無效，請確認月份與日期的組合');
+    return;
+  }
 
   document.getElementById('loadingMask').classList.add('active');
   setTimeout(() => {
